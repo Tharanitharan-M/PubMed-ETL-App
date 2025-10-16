@@ -94,7 +94,6 @@ You can also use make commands:
 - `make test` - run all tests
 - `make test-unit` - run unit tests
 - `make test-gemini` - test gemini integration
-- `make test-new` - test new features (validation)
 
 ## Requirements
 
