@@ -475,7 +475,6 @@ def qa_tab():
         st.markdown("""
         - "How many articles were published in 2024?"
         - "Which journals have the most articles?"
-        - "Show me articles about machine learning"
         - "Who are the most prolific authors?"
         - "What are the most common MeSH terms?"
         """)
@@ -652,69 +651,48 @@ def show_articles_by_year():
         st.error(f"Error loading articles by year: {str(e)}")
 
 def show_top_journals():
-    """Show top journals by article count"""
+    # show top journals using improved method
     try:
-        query = """
-        SELECT 
-            j.title as journal,
-            COUNT(*) as article_count
-        FROM articles a
-        JOIN journals j ON a.journal_id = j.id
-        GROUP BY j.title
-        ORDER BY article_count DESC
-        LIMIT 10
-        """
-        results = db.execute_query(query)
+        results = db.get_top_journals(10)
         
-        if not results.empty:
+        if results:
             st.subheader("📚 Top Journals")
-            st.dataframe(results)
+            # convert to dataframe for display
+            df = pd.DataFrame([(r.title, r.article_count) for r in results], 
+                            columns=['journal', 'article_count'])
+            st.dataframe(df)
         else:
             st.info("No journal data available")
     except Exception as e:
         st.error(f"Error loading top journals: {str(e)}")
 
 def show_top_authors():
-    """Show top authors by article count"""
+    # show top authors using improved method
     try:
-        query = """
-        SELECT 
-            a.full_name as author,
-            COUNT(*) as article_count
-        FROM authors a
-        JOIN article_authors aa ON a.id = aa.author_id
-        GROUP BY a.full_name
-        ORDER BY article_count DESC
-        LIMIT 10
-        """
-        results = db.execute_query(query)
+        results = db.get_top_authors(10)
         
-        if not results.empty:
+        if results:
             st.subheader("👥 Top Authors")
-            st.dataframe(results)
+            # convert to dataframe for display
+            df = pd.DataFrame([(r.full_name, r.article_count) for r in results], 
+                            columns=['author', 'article_count'])
+            st.dataframe(df)
         else:
             st.info("No author data available")
     except Exception as e:
         st.error(f"Error loading top authors: {str(e)}")
 
 def show_common_mesh_terms():
-    """Show most common MeSH terms"""
+    # show common mesh terms using improved method
     try:
-        query = """
-        SELECT 
-            mt.term as mesh_term,
-            COUNT(*) as usage_count
-        FROM mesh_terms mt
-        JOIN article_mesh_terms amt ON mt.id = amt.mesh_term_id
-        GROUP BY mt.term
-        ORDER BY usage_count DESC
-        LIMIT 15
-        """
-        results = db.execute_query(query)
+        results = db.get_common_mesh_terms(15)
         
-        if not results.empty:
+        if results:
             st.subheader("🏷️ Common MeSH Terms")
-            st.dataframe(results)
+            # convert to dataframe for display
+            df = pd.DataFrame([(r.term, r.usage_count) for r in results], 
+                            columns=['mesh_term', 'usage_count'])
+            st.dataframe(df)
         else:
             st.info("No MeSH term data available")
     except Exception as e:
