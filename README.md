@@ -69,6 +69,9 @@ You can also use make commands:
 - `make setup` - setup database
 - `make run-etl` - load articles
 - `make run-app` - start web app
+- `make test` - run all tests
+- `make test-unit` - run unit tests
+- `make test-gemini` - test gemini integration
 
 ## Requirements
 
