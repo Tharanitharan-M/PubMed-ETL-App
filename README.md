@@ -61,6 +61,28 @@ GEMINI_MODEL_NAME=gemini-2.0-flash
 - `src/database/database.py` - handles database operations
 - `src/ui/streamlit_app.py` - web interface
 - `src/config/config.py` - settings
+- `src/config/settings.py` - configuration validation with Pydantic
+- `src/utils/logger.py` - logging utilities
+- `src/utils/validation.py` - input validation utilities
+
+## New Features (Production Ready)
+
+
+### 📝 Logging System
+- Structured logging with file and console output
+- Log rotation and proper log levels
+- Replaced all print statements with proper logging
+
+### ⚙️ Configuration Management
+- Pydantic-based configuration validation
+- Environment variable validation
+- Better error messages for configuration issues
+
+### 🔒 Input Validation
+- PMID validation
+- Search term sanitization
+- SQL query safety checks
+- Basic security measures
 
 ## Commands
 
@@ -72,6 +94,7 @@ You can also use make commands:
 - `make test` - run all tests
 - `make test-unit` - run unit tests
 - `make test-gemini` - test gemini integration
+- `make test-new` - test new features (validation)
 
 ## Requirements
 

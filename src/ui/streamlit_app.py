@@ -10,7 +10,7 @@ from src.config.config import GEMINI_API_KEY
 from src.config.gemini_model_config import GeminiModelConfig
 from datetime import datetime
 
-# page setup
+# setup page
 st.set_page_config(
     page_title="PubMed ETL Dashboard",
     page_icon="🔬",
@@ -18,14 +18,14 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# database connection
+# connect to database
 @st.cache_resource
 def init_database():
     return DatabaseManager()
 
 db = init_database()
 
-# gemini model setup
+# setup gemini
 gemini_config = None
 if GEMINI_API_KEY:
     try:
@@ -130,59 +130,11 @@ def search_tab():
     with col4:
         limit = st.slider("Number of results:", 10, 100, 20)
     
-    # Year range filter option
-    with st.expander("📅 Advanced Year Filter"):
-        st.markdown("**Quick Filters:**")
-        quick_filters = st.columns(4)
-        
-        with quick_filters[0]:
-            if st.button("📅 Last 2 Years", help="2024-2025"):
-                st.session_state.quick_filter = "2024-2025"
-        with quick_filters[1]:
-            if st.button("📅 2021-2023", help="2021-2023"):
-                st.session_state.quick_filter = "2021-2023"
-        with quick_filters[2]:
-            if st.button("📅 2024 Only", help="2024"):
-                st.session_state.quick_filter = "2024"
-        with quick_filters[3]:
-            if st.button("📅 All Years", help="Remove year filter"):
-                st.session_state.quick_filter = "All"
-        
-        st.markdown("**Custom Year Range:**")
-        col_year1, col_year2 = st.columns(2)
-        
-        with col_year1:
-            start_year = st.selectbox("From year:", ["All"] + year_options[1:], key="start_year")
-        with col_year2:
-            end_year = st.selectbox("To year:", ["All"] + year_options[1:], key="end_year")
-        
-        # Use quick filter if set
-        if 'quick_filter' in st.session_state:
-            if st.session_state.quick_filter == "All":
-                start_year = "All"
-                end_year = "All"
-            elif "-" in st.session_state.quick_filter:
-                start_year, end_year = st.session_state.quick_filter.split("-")
-                start_year = int(start_year)
-                end_year = int(end_year)
-            else:
-                start_year = st.session_state.quick_filter
-                end_year = st.session_state.quick_filter
-        
-        if start_year != "All" and end_year != "All":
-            if start_year <= end_year:
-                st.info(f"📅 Showing articles from {start_year} to {end_year}")
-            else:
-                st.error("Start year must be less than or equal to end year")
     
     # Search button
     if st.button("🔍 Search", type="primary"):
         if search_term:
-            # Use year range if specified, otherwise use single year filter
-            if start_year != "All" and end_year != "All" and start_year <= end_year:
-                search_articles(search_term, f"{start_year}-{end_year}", journal_filter, limit)
-            else:
-                search_articles(search_term, year_filter, journal_filter, limit)
+            search_articles(search_term, year_filter, journal_filter, limit)
         else:
             st.warning("Please enter a search term")
     

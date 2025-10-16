@@ -1,5 +1,4 @@
 import psycopg2
-from psycopg2.extras import RealDictCursor
 from sqlalchemy import create_engine, text
 import pandas as pd
 import sys
@@ -7,6 +6,9 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
 from src.config.config import DB_CONFIG
+from src.utils.logger import get_logger
+
+logger = get_logger("database")
 
 class DatabaseManager:
     def __init__(self):
@@ -16,7 +18,7 @@ class DatabaseManager:
     def create_tables(self):
         with psycopg2.connect(**DB_CONFIG) as conn:
             with conn.cursor() as cur:
-                # journals table
+                # create journals table
                 cur.execute("""
                     CREATE TABLE IF NOT EXISTS journals (
                         id SERIAL PRIMARY KEY,
@@ -26,7 +28,7 @@ class DatabaseManager:
                     )
                 """)
                 
-                # authors table
+                # create authors table
                 cur.execute("""
                     CREATE TABLE IF NOT EXISTS authors (
                         id SERIAL PRIMARY KEY,
@@ -39,7 +41,7 @@ class DatabaseManager:
                     )
                 """)
                 
-                # articles table
+                # create articles table
                 cur.execute("""
                     CREATE TABLE IF NOT EXISTS articles (
                         pmid INTEGER PRIMARY KEY,
@@ -51,7 +53,7 @@ class DatabaseManager:
                     )
                 """)
                 
-                # mesh terms table
+                # create mesh terms table
                 cur.execute("""
                     CREATE TABLE IF NOT EXISTS mesh_terms (
                         id SERIAL PRIMARY KEY,
@@ -60,7 +62,7 @@ class DatabaseManager:
                     )
                 """)
                 
-                # article authors link
+                # create article authors link table
                 cur.execute("""
                     CREATE TABLE IF NOT EXISTS article_authors (
                         article_pmid INTEGER REFERENCES articles(pmid),
@@ -69,7 +71,7 @@ class DatabaseManager:
                     )
                 """)
                 
-                # article mesh terms link
+                # create article mesh terms link table
                 cur.execute("""
                     CREATE TABLE IF NOT EXISTS article_mesh_terms (
                         article_pmid INTEGER REFERENCES articles(pmid),
@@ -79,7 +81,7 @@ class DatabaseManager:
                 """)
                 
                 conn.commit()
-                print("Database tables created successfully!")
+                logger.info("Database tables created successfully!")
     
     def insert_article_data(self, article_data):
         with psycopg2.connect(**DB_CONFIG) as conn:
@@ -170,7 +172,7 @@ class DatabaseManager:
                     
                 except Exception as e:
                     conn.rollback()
-                    print(f"Error inserting article {article_data['pmid']}: {str(e)}")
+                    logger.error(f"Error inserting article {article_data['pmid']}: {str(e)}")
                     return False
     
     def execute_query(self, query, params=None):
@@ -184,7 +186,7 @@ class DatabaseManager:
                 df = pd.read_sql_query(query, self.engine)
             return df
         except Exception as e:
-            print(f"Error executing query: {str(e)}")
+            logger.error(f"Error executing query: {str(e)}")
             return pd.DataFrame()
     
     def get_article_stats(self):

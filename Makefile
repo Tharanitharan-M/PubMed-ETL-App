@@ -11,6 +11,7 @@ help:
 	@echo "  make test        - run all tests"
 	@echo "  make test-unit   - run unit tests"
 	@echo "  make test-gemini - test gemini integration"
+	@echo "  make test-new    - test new features (validation)"
 	@echo "  make clean       - clean temp files"
 
 install:

@@ -10,6 +10,9 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
 from src.database.database import DatabaseManager
 from src.config.config import PUBMED_BASE_URL, MAX_ARTICLES
+from src.utils.logger import get_logger
+
+logger = get_logger("etl")
 
 class PubMedETL:
     def __init__(self):
@@ -35,11 +38,11 @@ class PubMedETL:
             for id_elem in root.findall('.//Id'):
                 pmids.append(id_elem.text)
             
-            print(f"Found {len(pmids)} articles for search term: {search_term}")
+            logger.info(f"Found {len(pmids)} articles for search term: {search_term}")
             return pmids
             
         except Exception as e:
-            print(f"Error searching articles: {str(e)}")
+            logger.error(f"Error searching articles: {str(e)}")
             return []
     
     def fetch_article_details(self, pmid: str) -> Optional[Dict]:
@@ -75,7 +78,7 @@ class PubMedETL:
             return article_data
             
         except Exception as e:
-            print(f"Error fetching article {pmid}: {str(e)}")
+            logger.error(f"Error fetching article {pmid}: {str(e)}")
             return None
     
     def _extract_title(self, article) -> str:
@@ -162,22 +165,22 @@ class PubMedETL:
         return text
     
     def process_articles(self, search_term: str, max_articles: int = MAX_ARTICLES):
-        print(f"Starting ETL process for search term: {search_term}")
+        logger.info(f"Starting ETL process for search term: {search_term}")
         
         self.db.create_tables()
         pmids = self.search_articles(search_term, max_articles)
         
         if not pmids:
-            print("No articles found!")
+            logger.warning("No articles found!")
             return
         
-        print(f"Processing {len(pmids)} articles...")
+        logger.info(f"Processing {len(pmids)} articles...")
         
         success_count = 0
         error_count = 0
         
         for i, pmid in enumerate(pmids, 1):
-            print(f"Processing article {i}/{len(pmids)}: {pmid}")
+            logger.info(f"Processing article {i}/{len(pmids)}: {pmid}")
             
             article_data = self.fetch_article_details(pmid)
             
@@ -192,18 +195,18 @@ class PubMedETL:
             # small delay to not overwhelm the API
             time.sleep(0.5)
         
-        print(f"\nETL process completed!")
-        print(f"Successfully processed: {success_count} articles")
-        print(f"Errors: {error_count} articles")
+        logger.info(f"ETL process completed!")
+        logger.info(f"Successfully processed: {success_count} articles")
+        logger.info(f"Errors: {error_count} articles")
         
         stats = self.db.get_article_stats()
-        print(f"\nDatabase stats:")
-        print(f"Articles: {stats['total_articles']}")
-        print(f"Authors: {stats['total_authors']}")
-        print(f"Journals: {stats['total_journals']}")
-        print(f"MeSH terms: {stats['total_mesh_terms']}")
+        logger.info(f"Database stats:")
+        logger.info(f"Articles: {stats['total_articles']}")
+        logger.info(f"Authors: {stats['total_authors']}")
+        logger.info(f"Journals: {stats['total_journals']}")
+        logger.info(f"MeSH terms: {stats['total_mesh_terms']}")
         if 'year_range' in stats:
-            print(f"Years: {stats['year_range']}")
+            logger.info(f"Years: {stats['year_range']}")
 
 def main():
     # get articles from different years
@@ -219,7 +222,7 @@ def main():
     
     # get 20 articles from each year
     for search_term in search_terms:
-        print(f"\nProcessing: {search_term}")
+        logger.info(f"Processing: {search_term}")
         etl.process_articles(search_term, max_articles=20)
 
 if __name__ == "__main__":
